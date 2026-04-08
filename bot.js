@@ -1,4 +1,12 @@
-﻿const TelegramBot = require('node-telegram-bot-api');
+const http = require('http');
+
+// Создаем сервер, чтобы Render не закрывал приложение
+http.createServer((req, res) => {
+    res.write("I am alive");
+    res.end();
+}).listen(process.env.PORT || 3000);
+
+const TelegramBot = require('node-telegram-bot-api');
 
 // Укажи свой токен здесь
 const token = "8424607474:AAGeDr0zHRTUlYgXRnfQx48EPJ5_MVFhdEg";

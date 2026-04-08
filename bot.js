@@ -1,6 +1,7 @@
 const http = require('http');
+const TelegramBot = require('node-telegram-bot-api'); // ТА САМАЯ СТРОЧКА
 
-// Создаем сервер, чтобы Render не закрывал приложение
+// 1. Сервер для предотвращения "сна" (Render + Cron-job)
 http.createServer((req, res) => {
     res.write("I am alive");
     res.end();
@@ -9,8 +10,8 @@ http.createServer((req, res) => {
 const token = process.env.BOT_TOKEN;
 const bot = new TelegramBot(token, { polling: true });
 
-// --- 1. ДАННЫЕ МЕНЮ (КОНФИГУРАЦИЯ) ---
-const mainCategories = [
+// --- КОНФИГУРАЦИЯ МЕНЮ ---
+const categories = [
     { text: "PlayStation", callback_data: 'cat_ps' },
     { text: "Xbox", callback_data: 'cat_xbox' },
     { text: "Steam", callback_data: 'cat_steam' },
@@ -27,24 +28,26 @@ const priceList = [
     [{ text: "⬅️ Назад к категориям", callback_data: 'back_to_cats' }]
 ];
 
-// --- 2. ГЛАВНОЕ МЕНЮ (/START) ---
+// --- ГЛАВНОЕ МЕНЮ ---
 bot.onText(/\/start/, (msg) => {
-    bot.sendMessage(msg.chat.id, "Добро пожаловать в сервис обмена карт!", {
+    bot.sendMessage(msg.chat.id, "Добро пожаловать! Выберите раздел:", {
         reply_markup: {
             keyboard: [
                 [{ text: '👤 Личный кабинет' }],
-                [{ text: '🛒 Купить', callback_data: 'mode_buy' }, { text: '💰 Продать', callback_data: 'mode_sell' }]
+                [{ text: '🛒 Купить' }, { text: '💰 Продать' }]
             ],
             resize_keyboard: true
         }
     });
 });
 
-// --- 3. ЛОГИКА ЛИЧНОГО КАБИНЕТА ---
+// --- ЛОГИКА ТЕКСТОВЫХ КНОПОК ---
 bot.on('message', (msg) => {
+    const chatId = msg.chat.id;
+
     if (msg.text === '👤 Личный кабинет') {
-        const text = `<b>📂 Личный кабинет</b>\n\n🆔 ID: <code>${msg.from.id}</code>\n💰 Баланс: 0.00 €\n\nВыберите действие:`;
-        bot.sendMessage(msg.chat.id, text, {
+        const profile = `<b>📂 Личный кабинет</b>\n\n🆔 ID: <code>${msg.from.id}</code>\n💰 Баланс: 0.00 €\n\nВыберите действие:`;
+        bot.sendMessage(chatId, profile, {
             parse_mode: 'HTML',
             reply_markup: {
                 inline_keyboard: [
@@ -54,30 +57,16 @@ bot.on('message', (msg) => {
         });
     }
 
-    // Обработка текстовых кнопок Купить/Продать
     if (msg.text === '🛒 Купить' || msg.text === '💰 Продать') {
-        const mode = msg.text === '🛒 Купить' ? 'ПОКУПКИ' : 'ПРОДАЖИ';
-        showCategories(msg.chat.id, mode);
+        const mode = msg.text === '🛒 Купить' ? 'КУПИТЬ' : 'ПРОДАТЬ';
+        bot.sendMessage(chatId, `Вы вошли в режим <b>${mode}</b>.\nВыберите категорию:`, {
+            parse_mode: 'HTML',
+            reply_markup: { inline_keyboard: categories.map(c => [c]) }
+        });
     }
 });
 
-// --- 4. ФУНКЦИИ ОТОБРАЖЕНИЯ (РЕДАКТИРОВАНИЕ) ---
-
-function showCategories(chatId, mode, messageId = null) {
-    const text = `📊 Меню <b>${mode}</b>\nВыберите категорию карты:`;
-    const options = {
-        parse_mode: 'HTML',
-        reply_markup: { inline_keyboard: mainCategories.map(cat => [cat]) }
-    };
-
-    if (messageId) {
-        bot.editMessageText(text, { chat_id: chatId, message_id: messageId, ...options });
-    } else {
-        bot.sendMessage(chatId, text, options);
-    }
-}
-
-// --- 5. ОБРАБОТКА CALLBACK (ИНЛАЙН КНОПКИ) ---
+// --- ОБРАБОТКА ИНЛАЙН КНОПОК ---
 bot.on('callback_query', (query) => {
     const chatId = query.message.chat.id;
     const messageId = query.message.message_id;
@@ -85,10 +74,10 @@ bot.on('callback_query', (query) => {
 
     bot.answerCallbackQuery(query.id);
 
-    // Выбор категории (PlayStation, Xbox и т.д.)
+    // Выбор категории
     if (data.startsWith('cat_')) {
-        const catName = data.replace('cat_', '').toUpperCase();
-        bot.editMessageText(`📍 Категория: <b>${catName}</b>\nВыберите номинал:`, {
+        const name = data.replace('cat_', '').toUpperCase();
+        bot.editMessageText(`📍 Категория: <b>${name}</b>\nВыберите номинал:`, {
             chat_id: chatId,
             message_id: messageId,
             parse_mode: 'HTML',
@@ -98,12 +87,16 @@ bot.on('callback_query', (query) => {
 
     // Возврат назад
     if (data === 'back_to_cats') {
-        showCategories(chatId, "ВЫБОРА", messageId);
+        bot.editMessageText("Выберите категорию карты:", {
+            chat_id: chatId,
+            message_id: messageId,
+            reply_markup: { inline_keyboard: categories.map(c => [c]) }
+        });
     }
 
     // Выбор номинала
     if (data.startsWith('val_')) {
         const val = data.replace('val_', '');
-        bot.sendMessage(chatId, `✅ Вы выбрали номинал <b>${val} €</b>.\n\nПожалуйста, ожидайте инструкций оператора или введите данные карты.`, { parse_mode: 'HTML' });
+        bot.sendMessage(chatId, `✅ Вы выбрали <b>${val} €</b>.\n\nСледуйте инструкциям системы...`);
     }
 });

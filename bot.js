@@ -29,11 +29,11 @@ bot.on('message', (msg) => {
         bot.sendMessage(msg.chat.id, "Выберите категорию карты:", {
             reply_markup: {
                 inline_keyboard: [
-                    [{ text: "Вариант 1", callback_data: 'menu_1' }],
-                    [{ text: "Вариант 2", callback_data: 'menu_2' }],
-                    [{ text: "Вариант 3", callback_data: 'menu_3' }],
-                    [{ text: "Вариант 4", callback_data: 'menu_4' }],
-                    [{ text: "Вариант 5", callback_data: 'menu_5' }]
+                    [{ text: "PlayStation", callback_data: 'menu_1' }],
+                    [{ text: "Xbox", callback_data: 'menu_2' }],
+                    [{ text: "Steam", callback_data: 'menu_3' }],
+                    [{ text: "Apple", callback_data: 'menu_4' }],
+                    [{ text: "Amazon", callback_data: 'menu_5' }]
                 ]
             }
         });
@@ -57,11 +57,11 @@ bot.on('callback_query', (query) => {
             reply_markup: {
                 inline_keyboard: [
                     // Кнопки в два столбика [ {1}, {2} ]
-                    [{ text: "Подтип 1", callback_data: 'sub_1' }, { text: "Подтип 2", callback_data: 'sub_2' }],
-                    [{ text: "Подтип 3", callback_data: 'sub_3' }, { text: "Подтип 4", callback_data: 'sub_4' }],
-                    [{ text: "Подтип 5", callback_data: 'sub_5' }, { text: "Подтип 6", callback_data: 'sub_6' }],
-                    [{ text: "Подтип 7", callback_data: 'sub_7' }, { text: "Подтип 8", callback_data: 'sub_8' }],
-                    [{ text: "Подтип 9", callback_data: 'sub_9' }, { text: "Подтип 10", callback_data: 'sub_10' }],
+                    [{ text: "5 €", callback_data: 'sub_1' }, { text: "70 €", callback_data: 'sub_2' }],
+                    [{ text: "10 €", callback_data: 'sub_3' }, { text: "75 €", callback_data: 'sub_4' }],
+                    [{ text: "20 €", callback_data: 'sub_5' }, { text: "100 €", callback_data: 'sub_6' }],
+                    [{ text: "25 €", callback_data: 'sub_7' }, { text: "150 €", callback_data: 'sub_8' }],
+                    [{ text: "50 €", callback_data: 'sub_9' }, { text: "200 €", callback_data: 'sub_10' }],
                     // Кнопка возврата в самое начало
                     [{ text: "⬅️ Назад к категориям", callback_data: 'go_back' }]
                 ]

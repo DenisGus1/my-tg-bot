@@ -9,7 +9,7 @@ http.createServer((req, res) => {
 const TelegramBot = require('node-telegram-bot-api');
 
 // Укажи свой токен здесь
-const token = "8424607474:AAGeDr0zHRTUlYgXRnfQx48EPJ5_MVFhdEg";
+const token = process.env.BOT_TOKEN;
 const bot = new TelegramBot(token, { polling: true });
 
 // --- 1. ПРИВЕТСТВИЕ И ГЛАВНАЯ КНОПКА ---
